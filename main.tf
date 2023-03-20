@@ -5,15 +5,7 @@ provider "google" {
   zone    = "us-east1-b"
 }
 
-resource "null_resource" "copy_docker_compose" {
-  provisioner "local-exec" {
-    command = "cp ./docker-compose.yml ."
-  }
-}
 
-locals {
-  docker_compose_file = "./docker-compose.yml"
-}
 
 resource "google_compute_instance" "vm_instance" {
   name         = "trf-serv-sp-ap"
@@ -38,6 +30,16 @@ resource "google_compute_instance" "vm_instance" {
 
   metadata_startup_script = "sudo apt-get update && sudo apt-get install -y docker.io git openjdk-8-jdk && wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - && echo deb https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list && sudo apt-get update && sudo apt-get install -y jenkins && sudo systemctl start jenkins && sudo systemctl enable jenkins && sudo chmod 777 /var/run/docker.sock && sudo usermod -aG docker jenkins && sudo systemctl restart jenkins && sudo curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose"
 
+}
+
+resource "null_resource" "copy_docker_compose" {
+  provisioner "local-exec" {
+    command = "cp ./docker-compose.yml ."
+  }
+}
+
+locals {
+  docker_compose_file = "./docker-compose.yml"
 }
 
 resource "google_compute_firewall" "allow_http" {
