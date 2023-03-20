@@ -24,25 +24,25 @@ resource "digitalocean_droplet" "web" {
               EOF
 
   # Bloque de aprovisionamiento para copiar el archivo docker-compose.yml
-  provisioner "file" {
-    source      = "./docker-compose.yaml"
-    destination = "./docker-compose.yaml"
-  }
+  #provisioner "file" {
+  #  source      = "./docker-compose.yaml"
+   # destination = "./docker-compose.yaml"
+  #}
 
-  provisioner "file"{
-  	source		="./Dockerfile-php"
-  	destination	="./Dockerfile-php"
-  }
+  #provisioner "file"{
+  #	source		="./Dockerfile-php"
+  #	destination	="./Dockerfile-php"
+  #}
   
 
   provisioner "remote-exec" {
     inline = [
-      "apt-get update",
-      "apt-get install -y docker.io git",
-      #"docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
+      #"apt-get update",
+      #"apt-get install -y docker.io git",
+      "docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
       #"sudo docker exec -t jenkins bash -c 'echo \"jenkins ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers'",
-      "apt-get install -y git docker-compose",
-      #"git clone https://github.com/vpyojanny/SEGUNDO_PARCIAL_AP.git GITHUB_DIR",
+      #"apt-get install -y git docker-compose",
+      "git clone https://github.com/vpyojanny/SEGUNDO_PARCIAL_AP.git GITHUB_DIR",
       "cd GITHUB_DIR",
       "docker-compose build",
       "docker-compose up -d"
