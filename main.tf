@@ -17,16 +17,10 @@ resource "digitalocean_droplet" "web" {
   size     = var.droplet_size
   ssh_keys = [var.ssh_key]
   # Script de inicio para instalar Docker y Docker Compose
-  user_data = <<-EOF
-              #!/bin/bash
-              apt-get update
-              apt-get install -y docker.io docker-compose
-              EOF
-
   # Bloque de aprovisionamiento para copiar el archivo docker-compose.yml
   #provisioner "file" {
   #  source      = "./docker-compose.yaml"
-   # destination = "./docker-compose.yaml"
+  # destination = "./docker-compose.yaml"
   #}
 
   #provisioner "file"{
@@ -37,11 +31,11 @@ resource "digitalocean_droplet" "web" {
 
   provisioner "remote-exec" {
     inline = [
-      #"apt-get update",
-      #"apt-get install -y docker.io git",
-      "docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
+      "apt-get update",
+      "apt-get install -y docker.io git",
+      #"docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
       #"sudo docker exec -t jenkins bash -c 'echo \"jenkins ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers'",
-      #"apt-get install -y git docker-compose",
+      "apt-get install -y git docker-compose",
       "git clone https://github.com/vpyojanny/SEGUNDO_PARCIAL_AP.git GITHUB_DIR",
       "cd GITHUB_DIR",
       "docker-compose build",
