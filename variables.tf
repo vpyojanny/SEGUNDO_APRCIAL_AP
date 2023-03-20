@@ -1,5 +1,5 @@
 variable "do_token" {
-  default = "dop_v1_c2ecc974fb32ea8ec4419e35ac2747deb37d6f6c8f7f559151f3d551929f24bf"
+  default = "dop_v1_e570224c7b1bab754be8da40f776bf1c979bd9d871a0fd298346d95ffdce38a1"
   description = "DigitalOcean API token"
 }
 
