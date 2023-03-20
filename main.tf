@@ -1,59 +1,52 @@
-provider "google" {
-  credentials = file("./GC_Credentials.json")
-  project = "pelagic-firefly-342817"
-  region  = "us-east1"
-  zone    = "us-east1-b"
-}
-
-
-
-resource "google_compute_instance" "vm_instance" {
-  name         = "trf-serv-sp-ap"
-  machine_type = "n1-standard-1"
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-10"
+terraform {
+  required_providers {
+    digitalocean = {
+      source = "digitalocean/digitalocean"
+      version = "2.0"
     }
   }
+}
+provider "digitalocean" {
+  token = "dop_v1_6c8434e9f5378868176eae2cdd963e88b56bbc2c6a54610620644588508a9b85"
+}
 
-  network_interface {
-    network = "default"
+resource "digitalocean_droplet" "web" {
+  image    = "ubuntu-20-04-x64"
+  name     = "SP-AP-TERRAFORM"
+  region   = "nyc1"
+  size     = "s-1vcpu-1gb"
+  ssh_keys = ["ca:c1:72:d4:b2:28:dc:23:70:5a:16:e5:76:5c:30:71"]
+  # Script de inicio para instalar Docker y Docker Compose
+  user_data = <<-EOF
+              #!/bin/bash
+              apt-get update
+              apt-get install -y docker.io docker-compose
+              EOF
 
-    access_config {
-    }
+  # Bloque de aprovisionamiento para copiar el archivo docker-compose.yml
+  provisioner "file" {
+    source      = "docker-compose.yml"
+    destination = "./docker-compose.yml"
   }
 
-  metadata = {
-    ssh-keys = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDYFdktT9P/WCPHQRwhSxYf3DkouZqm0K6fv5SKrkhha6g8fDSqKQGb2fZyeXI7qQQQ08QMTIQV6tw+QuKnIe3DyNQblI3/GeoowC2VXG9Swpok0Ru7HR5AWUI8WfIj87Ug5DAoV1gsU1lMEJeGoBtNhgoafGXxsu6oaFSoFohjx0q8b5y2l1jUEipQpWBLHiPLbYrfLGPDUn1uQfk4QDsoUeBFsa2+gd/SQmzOs8AWENSdrCFh7eB1qbjlHHCn1Ll7eDxiaItnSwD8af0aBS1X5kDVjR9BDsliVWC97W61X5JkUNTcifukw6eo1z2zAVni73pF7M11Voexnx/rGL2qZlZGS2XLKvvEZDfJ7i5JXdfX0UxnQOzM/eQBX3aQV3HtnSHm0MlVm8IOmjIeLu+u+ZjVv6XDCUxARNqOLaKEnCR01nKKQhx0Te/Moz+rLG6qzP9wiiz5+h9irJPCG6oYFNvGUfanhT8qBTHstFqxtlO7uNXFTP36R2DzT0HbQ0c= yojan@ENDYPC"
+  provisioner "file"{
+  	source		="Dockerfile-php"
+  	destination	="./Dockerfile-php"
   }
+  
 
-  metadata_startup_script = "sudo apt-get update && sudo apt-get install -y docker.io git openjdk-8-jdk && wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - && echo deb https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list && sudo apt-get update && sudo apt-get install -y jenkins && sudo systemctl start jenkins && sudo systemctl enable jenkins && sudo chmod 777 /var/run/docker.sock && sudo usermod -aG docker jenkins && sudo systemctl restart jenkins && sudo curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose"
-
-}
-
-resource "null_resource" "copy_docker_compose" {
-  provisioner "local-exec" {
-    command = "cp ./docker-compose.yml ."
+  provisioner "remote-exec" {
+    inline = [
+      "apt-get update",
+      "apt-get install -y docker.io git",
+      "docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
+      "docker exec -t jenkins bash -c 'echo \"jenkins ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers'",
+    ]
   }
-}
-
-locals {
-  docker_compose_file = "./docker-compose.yml"
-}
-
-resource "google_compute_firewall" "allow_http" {
-name = "allow-http"
-network = "default"
-
-allow {
-protocol = "tcp"
-ports = ["80"]
-}
-
-source_ranges = ["0.0.0.0/0"]
-}
-
-output "jenkins_url" {
-value = "http://${google_compute_instance.vm_instance.network_interface.0.access_config.0.nat_ip}:8080"
+  connection {
+    type     = "ssh"
+    user     = "root"
+    private_key = file("~/.ssh/id_rsa")
+    host     = digitalocean_droplet.web.ipv4_address
+  }
 }
