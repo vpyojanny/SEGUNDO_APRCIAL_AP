@@ -28,7 +28,7 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       MYSQL_HOST: '%'
     ports:
-      - "3346:3306"
+      - "3306:3306"
     volumes:
       - ./mysql-data:/var/lib/mysql
     networks:
