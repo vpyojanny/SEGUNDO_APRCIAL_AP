@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    container_name: CONT_PHP_SP
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - red1
+
+  db:
+    image: mysql:latest
+    container_name: CONT_MYSQL_SP
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '1160439'
+      MYSQL_DATABASE: SP_AP
+      MYSQL_USER: endy09
+      MYSQL_PASSWORD: '1160439'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_HOST: '%'
+    ports:
+      - "3346:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - red1
+
+networks:
+  red1:
