@@ -40,10 +40,10 @@ resource "digitalocean_droplet" "web" {
       "apt-get update",
       "apt-get install -y docker.io git",
       "docker run -d -p ${var.jenkins_port}:8080 --name jenkins jenkins/jenkins:lts",
-      "sudo docker exec -t jenkins bash -c 'echo \"jenkins ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers',
+      #"sudo docker exec -t jenkins bash -c 'echo \"jenkins ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers'",
       "apt-get install -y git docker-compose",
-      "git clone https://github.com/vpyojanny/SEGUNDO_PARCIAL_AP.git",
-      #"cd TERRAFORM",
+      "git clone https://github.com/vpyojanny/SEGUNDO_PARCIAL_AP.git GITHUB_DIR",
+      "cd GITHUB_DIR",
       "docker-compose build",
       "docker-compose up -d"
     ]
